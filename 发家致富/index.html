@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>彩票助手</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>彩票助手</h1>
+
+    <div class="card">
+      <h2>大乐透随机选号</h2>
+      <button onclick="generateDlt()">生成号码</button>
+      <p id="dlt-result"></p>
+      <button onclick="saveDlt()">保存号码</button>
+    </div>
+
+    <div class="card">
+      <h2>双色球随机选号</h2>
+      <button onclick="generateSsq()">生成号码</button>
+      <p id="ssq-result"></p>
+      <button onclick="saveSsq()">保存号码</button>
+    </div>
+
+    <div class="card">
+      <h2>我的记录</h2>
+      <div id="records"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
