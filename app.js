@@ -82,36 +82,49 @@ function loadRecords() {
 }
 
 loadRecords();
-loadLotteryData();
 async function loadLotteryData() {
 
   try {
 
     // 大乐透
-    let dltRes = await fetch("https://api.vvhan.com/api/caipiao?code=dlt");
+    const dltRes = await fetch(
+      "https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=85&pageSize=1&pageNo=1"
+    );
 
-    let dltData = await dltRes.json();
+    const dltJson = await dltRes.json();
+
+    const dlt = dltJson.value.list[0];
 
     document.getElementById("dlt-history").innerHTML = `
-      <p>期号：${dltData.data.expect}</p>
-      <p>${dltData.data.opencode}</p>
-      <p>开奖时间：${dltData.data.opentime}</p>
+      <p>期号：${dlt.lotteryDrawNum}</p>
+      <p>${dlt.lotteryDrawResult}</p>
+      <p>开奖日期：${dlt.lotteryDrawTime}</p>
     `;
 
     // 双色球
-    let ssqRes = await fetch("https://api.vvhan.com/api/caipiao?code=ssq");
+    const ssqRes = await fetch(
+      "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=ssq&issueCount=1"
+    );
 
-    let ssqData = await ssqRes.json();
+    const ssqJson = await ssqRes.json();
+
+    const ssq = ssqJson.result[0];
 
     document.getElementById("ssq-history").innerHTML = `
-      <p>期号：${ssqData.data.expect}</p>
-      <p>${ssqData.data.opencode}</p>
-      <p>开奖时间：${ssqData.data.opentime}</p>
+      <p>期号：${ssq.code}</p>
+      <p>${ssq.red} + ${ssq.blue}</p>
+      <p>开奖日期：${ssq.date}</p>
     `;
 
-  } catch (err) {
+  } catch (e) {
 
-    console.log(err);
+    console.log(e);
 
+    document.getElementById("dlt-history").innerHTML =
+      "大乐透数据加载失败";
+
+    document.getElementById("ssq-history").innerHTML =
+      "双色球数据加载失败";
   }
 }
+loadLotteryData();
