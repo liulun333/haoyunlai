@@ -1,45 +1,430 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>彩票助手</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>好运选号机</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"PingFang SC",sans-serif;
+    background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+    min-height:100vh;
+    padding:15px;
+    color:#333;
+}
+
+.container{
+    max-width:520px;
+    margin:auto;
+}
+
+.title{
+    text-align:center;
+    color:white;
+    margin-bottom:20px;
+}
+
+.title h1{
+    font-size:34px;
+}
+
+.title p{
+    margin-top:8px;
+    opacity:0.9;
+}
+
+.card{
+    background:white;
+    border-radius:24px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.12);
+}
+
+.section-title{
+    font-size:22px;
+    margin-bottom:18px;
+    font-weight:bold;
+}
+
+.btn-group{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+button{
+    border:none;
+    border-radius:16px;
+    padding:14px;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.25s;
+    font-weight:bold;
+}
+
+.main-btn{
+    flex:1;
+    background:#ff5f6d;
+    color:white;
+}
+
+.main-btn:hover{
+    transform:scale(1.03);
+}
+
+.clear-btn{
+    background:#ddd;
+}
+
+.number-area{
+    margin-top:15px;
+}
+
+.ball-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.ball{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.red{
+    background:#ff4d6d;
+}
+
+.blue{
+    background:#3a86ff;
+}
+
+.record{
+    background:#fff5f5;
+    border-radius:18px;
+    padding:15px;
+    margin-bottom:12px;
+}
+
+.record-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+
+.record-type{
+    font-weight:bold;
+    font-size:18px;
+}
+
+.small-btn{
+    padding:8px 12px;
+    font-size:14px;
+    border-radius:12px;
+    color:white;
+}
+
+.edit-btn{
+    background:#ffb703;
+}
+
+.delete-btn{
+    background:#ef476f;
+}
+
+.empty{
+    text-align:center;
+    color:#888;
+    padding:20px;
+}
+
+footer{
+    text-align:center;
+    color:white;
+    opacity:0.8;
+    margin-top:10px;
+    font-size:14px;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>彩票助手</h1>
+<div class="container">
 
-    <div class="card">
-      <h2>大乐透随机选号</h2>
-      <button onclick="generateDlt()">生成号码</button>
-      <p id="dlt-result"></p>
-      <button onclick="saveDlt()">保存号码</button>
+    <div class="title">
+        <h1>🎉 好运选号机</h1>
+        <p>随机生成大乐透 & 双色球号码</p>
     </div>
 
     <div class="card">
-      <h2>双色球随机选号</h2>
-      <button onclick="generateSsq()">生成号码</button>
-      <p id="ssq-result"></p>
-      <button onclick="saveSsq()">保存号码</button>
+
+        <div class="section-title">🎲 随机选号</div>
+
+        <div class="btn-group">
+            <button class="main-btn" onclick="generateDLT()">
+                大乐透
+            </button>
+
+            <button class="main-btn" onclick="generateSSQ()">
+                双色球
+            </button>
+        </div>
+
+        <div id="resultArea" class="number-area"></div>
+
     </div>
 
     <div class="card">
-      <h2>我的记录</h2>
-      <div class="card">
-  <h2>最新大乐透开奖</h2>
-  <div id="dlt-history">加载中...</div>
+
+        <div class="record-top">
+            <div class="section-title">📒 我的记录</div>
+
+            <button class="clear-btn" onclick="clearRecords()">
+                清空
+            </button>
+        </div>
+
+        <div id="records"></div>
+
+    </div>
+
+    <footer>
+        好运常在 🍀
+    </footer>
+
 </div>
 
-<div class="card">
-  <h2>最新双色球开奖</h2>
-  <div id="ssq-history">加载中...</div>
-</div>
-      <div id="records"></div>
-    </div>
-  </div>
+<script>
 
-  <script src="app.js"></script>
+let records = JSON.parse(localStorage.getItem("lotteryRecords")) || [];
+
+function randomNumbers(count,min,max){
+    let arr=[];
+
+    while(arr.length<count){
+        let num=Math.floor(Math.random()*(max-min+1))+min;
+
+        if(!arr.includes(num)){
+            arr.push(num);
+        }
+    }
+
+    return arr.sort((a,b)=>a-b);
+}
+
+function renderBalls(reds,blues){
+
+    let html='<div class="ball-row">';
+
+    reds.forEach(num=>{
+        html+=`
+            <div class="ball red">
+                ${String(num).padStart(2,'0')}
+            </div>
+        `;
+    });
+
+    html+='</div>';
+
+    html+='<div class="ball-row">';
+
+    blues.forEach(num=>{
+        html+=`
+            <div class="ball blue">
+                ${String(num).padStart(2,'0')}
+            </div>
+        `;
+    });
+
+    html+='</div>';
+
+    return html;
+}
+
+function generateDLT(){
+
+    let red=randomNumbers(5,1,35);
+    let blue=randomNumbers(2,1,12);
+
+    showResult("大乐透",red,blue);
+}
+
+function generateSSQ(){
+
+    let red=randomNumbers(6,1,33);
+    let blue=randomNumbers(1,1,16);
+
+    showResult("双色球",red,blue);
+}
+
+function showResult(type,reds,blues){
+
+    let html=`
+        <div style="margin-bottom:10px;font-weight:bold;">
+            ${type}
+        </div>
+
+        ${renderBalls(reds,blues)}
+
+        <button class="main-btn" 
+        style="margin-top:15px;width:100%;"
+        onclick='saveRecord("${type}","${reds.join(",")}","${blues.join(",")}")'>
+            ❤️ 保存这组号码
+        </button>
+    `;
+
+    document.getElementById("resultArea").innerHTML=html;
+}
+
+function saveRecord(type,reds,blues){
+
+    records.unshift({
+        id:Date.now(),
+        type,
+        reds,
+        blues
+    });
+
+    localStorage.setItem(
+        "lotteryRecords",
+        JSON.stringify(records)
+    );
+
+    renderRecords();
+
+    alert("保存成功 🎉");
+}
+
+function renderRecords(){
+
+    let box=document.getElementById("records");
+
+    if(records.length===0){
+
+        box.innerHTML=`
+            <div class="empty">
+                还没有保存记录~
+            </div>
+        `;
+
+        return;
+    }
+
+    let html='';
+
+    records.forEach(item=>{
+
+        html+=`
+        <div class="record">
+
+            <div class="record-top">
+
+                <div class="record-type">
+                    ${item.type}
+                </div>
+
+                <div>
+
+                    <button class="small-btn edit-btn"
+                    onclick="editRecord(${item.id})">
+                        编辑
+                    </button>
+
+                    <button class="small-btn delete-btn"
+                    onclick="deleteRecord(${item.id})">
+                        删除
+                    </button>
+
+                </div>
+
+            </div>
+
+            ${renderBalls(
+                item.reds.split(',').map(Number),
+                item.blues.split(',').map(Number)
+            )}
+
+        </div>
+        `;
+    });
+
+    box.innerHTML=html;
+}
+
+function deleteRecord(id){
+
+    records=records.filter(item=>item.id!==id);
+
+    localStorage.setItem(
+        "lotteryRecords",
+        JSON.stringify(records)
+    );
+
+    renderRecords();
+}
+
+function editRecord(id){
+
+    let item=records.find(v=>v.id===id);
+
+    let newReds=prompt(
+        "修改红球（英文逗号分隔）",
+        item.reds
+    );
+
+    if(newReds===null) return;
+
+    let newBlues=prompt(
+        "修改蓝球（英文逗号分隔）",
+        item.blues
+    );
+
+    if(newBlues===null) return;
+
+    item.reds=newReds;
+    item.blues=newBlues;
+
+    localStorage.setItem(
+        "lotteryRecords",
+        JSON.stringify(records)
+    );
+
+    renderRecords();
+}
+
+function clearRecords(){
+
+    if(confirm("确定清空所有记录吗？")){
+
+        records=[];
+
+        localStorage.removeItem("lotteryRecords");
+
+        renderRecords();
+    }
+}
+
+renderRecords();
+
+</script>
+
 </body>
 </html>
