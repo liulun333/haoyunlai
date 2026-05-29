@@ -82,3 +82,36 @@ function loadRecords() {
 }
 
 loadRecords();
+loadLotteryData();
+async function loadLotteryData() {
+
+  try {
+
+    // 大乐透
+    let dltRes = await fetch("https://api.vvhan.com/api/caipiao?code=dlt");
+
+    let dltData = await dltRes.json();
+
+    document.getElementById("dlt-history").innerHTML = `
+      <p>期号：${dltData.data.expect}</p>
+      <p>${dltData.data.opencode}</p>
+      <p>开奖时间：${dltData.data.opentime}</p>
+    `;
+
+    // 双色球
+    let ssqRes = await fetch("https://api.vvhan.com/api/caipiao?code=ssq");
+
+    let ssqData = await ssqRes.json();
+
+    document.getElementById("ssq-history").innerHTML = `
+      <p>期号：${ssqData.data.expect}</p>
+      <p>${ssqData.data.opencode}</p>
+      <p>开奖时间：${ssqData.data.opentime}</p>
+    `;
+
+  } catch (err) {
+
+    console.log(err);
+
+  }
+}
